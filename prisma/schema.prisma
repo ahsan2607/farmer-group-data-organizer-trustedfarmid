@@ -1,0 +1,120 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Farmer {
+  id        Int        @id @default(autoincrement())
+  name      String
+  email     String?    @unique
+  phone     String?
+  address   String?
+
+  cropYieldPredictions CropYieldPrediction[]
+  cropOrders           CropOrder[]
+  cropHarvests         CropHarvest[]
+}
+
+model Veggie {
+  id            Int                         @id @default(autoincrement())
+  name          String
+  type          String?
+  pricePerKg    Float
+
+  cropYieldDetails    CropYieldPredictionDetail[]
+  cropOrderDetails    CropOrderDetail[]
+  cropReturnedDetails CropReturnedDetail[]
+  cropHarvestDetails  CropHarvestDetail[]
+}
+
+model CropYieldPrediction {
+  id             Int                           @id @default(autoincrement())
+  farmerId       Int
+  predictedDate  DateTime
+  validUntil     DateTime
+  totalYieldKg   Float
+
+  farmer         Farmer                        @relation(fields: [farmerId], references: [id])
+  details        CropYieldPredictionDetail[]
+}
+
+model CropYieldPredictionDetail {
+  id               Int                    @id @default(autoincrement())
+  predictionId     Int
+  veggieId         Int
+  predictedYieldKg Float
+
+  prediction       CropYieldPrediction    @relation(fields: [predictionId], references: [id], onDelete: Cascade)
+  veggie           Veggie                 @relation(fields: [veggieId], references: [id])
+}
+
+model CropOrder {
+  id         Int               @id @default(autoincrement())
+  farmerId   Int
+  orderDate  DateTime
+  status     String            @default("pending")
+
+  farmer     Farmer            @relation(fields: [farmerId], references: [id])
+  details    CropOrderDetail[]
+  returns    CropReturned[]
+}
+
+model CropOrderDetail {
+  id           Int         @id @default(autoincrement())
+  orderId      Int
+  veggieId     Int
+  quantityKg   Float
+
+  order        CropOrder   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  veggie       Veggie      @relation(fields: [veggieId], references: [id])
+}
+
+model CropReturned {
+  id         Int             @id @default(autoincrement())
+  orderId    Int
+  reason     String?
+
+  order      CropOrder       @relation(fields: [orderId], references: [id])
+  details    CropReturnedDetail[]
+}
+
+model CropReturnedDetail {
+  id          Int          @id @default(autoincrement())
+  returnId    Int
+  veggieId    Int
+  returnedKg  Float
+
+  cropReturned CropReturned @relation(fields: [returnId], references: [id], onDelete: Cascade)
+  veggie       Veggie       @relation(fields: [veggieId], references: [id])
+}
+
+model CropHarvest {
+  id             Int              @id @default(autoincrement())
+  farmerId       Int
+  harvestDate    DateTime
+  totalHarvestKg Float
+
+  farmer         Farmer           @relation(fields: [farmerId], references: [id])
+  details        CropHarvestDetail[]
+}
+
+model CropHarvestDetail {
+  id           Int          @id @default(autoincrement())
+  harvestId    Int
+  veggieId     Int
+  harvestedKg  Float
+
+  harvest      CropHarvest  @relation(fields: [harvestId], references: [id], onDelete: Cascade)
+  veggie       Veggie       @relation(fields: [veggieId], references: [id])
+}
