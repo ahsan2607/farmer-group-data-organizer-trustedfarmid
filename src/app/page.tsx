@@ -1,4 +1,4 @@
-import { DashboardLayout } from "@/components";
+import { DashboardLayout } from "@/components/layout";
 import "./globals.css";
 
 export default function Home() {

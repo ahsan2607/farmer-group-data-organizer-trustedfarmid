@@ -11,6 +11,15 @@ export default async function cropYieldPredictionHandler(
   try {
     switch (req.method) {
       case 'GET':
+        if (id) {
+          const cropYieldPrediction = await prisma.cropYieldPrediction.findUnique({ where: { id } });
+
+          if (!cropYieldPrediction) {
+            return res.status(404).json({ error: 'Crop yield prediction not found' });
+          }
+
+          return res.status(200).json(cropYieldPrediction);
+        }
         return res.status(200).json(await prisma.cropYieldPrediction.findMany());
       case 'POST':
         return res.status(201).json(await prisma.cropYieldPrediction.create({ data: req.body as CropYieldPredictionInputType }));

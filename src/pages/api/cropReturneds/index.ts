@@ -11,6 +11,15 @@ export default async function cropReturnedHandler(
   try {
     switch (req.method) {
       case 'GET':
+        if (id) {
+          const cropReturned = await prisma.cropReturned.findUnique({ where: { id } });
+
+          if (!cropReturned) {
+            return res.status(404).json({ error: 'Crop returned not found' });
+          }
+
+          return res.status(200).json(cropReturned);
+        }
         return res.status(200).json(await prisma.cropReturned.findMany());
       case 'POST':
         return res.status(201).json(await prisma.cropReturned.create({ data: req.body as CropReturnedInputType }));

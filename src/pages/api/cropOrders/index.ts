@@ -11,6 +11,15 @@ export default async function cropOrderHandler(
   try {
     switch (req.method) {
       case 'GET':
+        if (id) {
+          const cropOrder = await prisma.cropOrder.findUnique({ where: { id } });
+
+          if (!cropOrder) {
+            return res.status(404).json({ error: 'Crop order not found' });
+          }
+
+          return res.status(200).json(cropOrder);
+        }
         return res.status(200).json(await prisma.cropOrder.findMany());
       case 'POST':
         return res.status(201).json(await prisma.cropOrder.create({ data: req.body as CropOrderInputType }));

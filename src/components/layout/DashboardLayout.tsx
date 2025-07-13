@@ -1,5 +1,5 @@
 'use client';
-import { Sidebar } from "..";
+import { Sidebar } from "../structure";
 import "../../app/globals.css";
 
 type DashboardLayoutType = {

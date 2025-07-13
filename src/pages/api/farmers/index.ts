@@ -11,29 +11,62 @@ export default async function farmerHandler(
   try {
     switch (req.method) {
       case 'GET': {
-        const farmers = await prisma.farmer.findMany();
+        if (id) {
+          const farmer = await prisma.farmer.findUnique({ where: { id } });
+
+          if (!farmer) {
+            return res.status(404).json({ error: 'Farmer not found' });
+          }
+          
+          return res.status(200).json(farmer);
+        }
+        const farmers = await prisma.farmer.findMany({orderBy: {id: 'asc'}});
         return res.status(200).json(farmers);
       }
 
       case 'POST': {
-        return res.status(201).json(await prisma.farmer.create({ data: req.body as FarmerInputType }));
+        const farmer = await prisma.farmer.create({
+          data: req.body as FarmerInputType,
+        });
+
+        return res.status(201).json(farmer);
       }
 
       case 'PUT': {
-        if (!id) return res.status(400).json({ error: 'Missing ID' });
-        return res.status(200).json(await prisma.farmer.update({ where: { id }, data: req.body as FarmerInputType }));
+        if (!id) {
+          return res.status(400).json({ error: 'Missing ID' });
+        }
+
+        const updated = await prisma.farmer.update({
+          where: { id },
+          data: req.body as FarmerInputType,
+        });
+
+        return res.status(200).json(updated);
       }
 
       case 'DELETE': {
-        if (!id) return res.status(400).json({ error: 'Missing ID' });
-        return res.status(200).json(await prisma.farmer.delete({ where: { id } }));
+        if (!id) {
+          return res.status(400).json({ error: 'Missing ID' });
+        }
+
+        const deleted = await prisma.farmer.delete({
+          where: { id },
+        });
+
+        return res.status(200).json(deleted);
       }
 
-      default:
+      default: {
         res.setHeader('Allow', ['GET', 'POST', 'PUT', 'DELETE']);
-        return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
+        return res
+          .status(405)
+          .json({ error: `Method ${req.method} Not Allowed` });
+      }
     }
   } catch (error) {
-    return res.status(500).json({ error: `Server error: ${(error as Error).message}` });
+    return res
+      .status(500)
+      .json({ error: `Server error: ${(error as Error).message}` });
   }
 }

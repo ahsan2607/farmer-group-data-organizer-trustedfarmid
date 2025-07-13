@@ -11,6 +11,15 @@ export default async function cropHarvestHandler(
   try {
     switch (req.method) {
       case 'GET':
+        if (id) {
+          const cropHarvest = await prisma.cropHarvest.findUnique({ where: { id } });
+
+          if (!cropHarvest) {
+            return res.status(404).json({ error: 'Crop harvest not found' });
+          }
+
+          return res.status(200).json(cropHarvest);
+        }
         return res.status(200).json(await prisma.cropHarvest.findMany());
       case 'POST':
         return res.status(201).json(await prisma.cropHarvest.create({ data: req.body as CropHarvestInputType }));

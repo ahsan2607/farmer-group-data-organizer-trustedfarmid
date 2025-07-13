@@ -11,6 +11,15 @@ export default async function veggieHandler(
   try {
     switch (req.method) {
       case 'GET':
+        if (id) {
+          const veggie = await prisma.veggie.findUnique({ where: { id } });
+
+          if (!veggie) {
+            return res.status(404).json({ error: 'Veggie not found' });
+          }
+          
+          return res.status(200).json(veggie);
+        }
         return res.status(200).json(await prisma.veggie.findMany());
       case 'POST':
         return res.status(201).json(await prisma.veggie.create({ data: req.body as VeggieInputType }));
